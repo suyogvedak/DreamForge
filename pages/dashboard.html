@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard | DreamForge</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0d0d0d, #1a1a2e, #111827);
+      color: #f9fafb;
+    }
+    .glass {
+      background: rgba(0,0,0,0.65);
+      border: 1px solid #00ffff33;
+      backdrop-filter: blur(10px);
+      padding: 1rem;
+      border-radius: 0.75rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans">
+
+  <!-- Navbar -->
+  <nav class="bg-black/80 backdrop-blur sticky top-0 z-40 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-cyan-400 cursor-pointer" onclick="location.href='index.html'">DreamForge</h1>
+      <div id="auth-buttons" class="space-x-4"></div>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <section class="text-center py-10 px-4">
+    <h2 class="text-4xl font-extrabold text-cyan-300 mb-2">📂 Your Dashboard</h2>
+    <p class="text-lg text-gray-300">All your saved characters, worlds, quests, weapons, and logos in one place.</p>
+  </section>
+
+  <!-- Content area -->
+  <section class="max-w-6xl mx-auto px-4 py-6">
+    <div id="dashboardContent" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    <p id="noContentMsg" class="text-center text-gray-400 mt-10 hidden">No saved content yet. Generate something and save it!</p>
+  </section>
+
+  <footer class="bg-black/80 text-center py-6 text-gray-400 text-sm mt-10">
+    © 2025 DreamForge | Dashboard
+  </footer>
+
+  <!-- Firebase + Dashboard Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    import { firebaseConfig } from "../scripts/firebaseConfig.js";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const authButtons = document.getElementById("auth-buttons");
+    const dashboardContent = document.getElementById("dashboardContent");
+    const noContentMsg = document.getElementById("noContentMsg");
+
+    // Render one saved item
+    function renderItem(item) {
+      const card = document.createElement("div");
+      card.className = "glass p-4 hover:shadow-lg transition";
+
+      const title = document.createElement("h3");
+      title.className = "text-xl font-bold text-cyan-300 mb-2";
+      title.textContent = item.title || `${item.type} (${item.theme})`;
+
+      const meta = document.createElement("p");
+      meta.className = "text-sm text-gray-400 mb-2";
+      meta.textContent = `${item.theme || "generic"} • ${item.type}`;
+
+      const text = document.createElement("pre");
+      text.className = "text-gray-200 whitespace-pre-wrap text-sm";
+      text.textContent = item.text || "";
+
+      card.appendChild(title);
+      card.appendChild(meta);
+
+      if (item.image) {
+        const img = document.createElement("img");
+        img.src = item.image;
+        img.alt = "Generated image";
+        img.className = "w-full h-auto rounded mb-3";
+        card.appendChild(img);
+      }
+
+      card.appendChild(text);
+      return card;
+    }
+
+    // Fetch saved items
+    async function loadDashboard(uid) {
+      try {
+        const res = await fetch(`/api/dashboard/${uid}`);
+        if (!res.ok) throw new Error(await res.text());
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || "Unknown error");
+
+        dashboardContent.innerHTML = "";
+        if (json.items.length === 0) {
+          noContentMsg.classList.remove("hidden");
+          return;
+        }
+        noContentMsg.classList.add("hidden");
+
+        json.items.forEach(item => {
+          dashboardContent.appendChild(renderItem(item));
+        });
+      } catch (err) {
+        console.error("Dashboard fetch failed:", err);
+        dashboardContent.innerHTML = `<p class="text-red-400">Error loading dashboard: ${err.message}</p>`;
+      }
+    }
+
+    // Auth state
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        authButtons.innerHTML = `
+          <span class='text-sm text-gray-300'>${user.email}</span>
+          <button id="logoutBtn" class="bg-cyan-600 px-3 py-1 rounded hover:bg-cyan-700">Logout</button>
+        `;
+        document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth).then(()=> location.href='index.html'));
+
+        loadDashboard(user.uid);
+      } else {
+        authButtons.innerHTML = `
+          <a href="login.html" class="bg-cyan-600 px-3 py-1 rounded hover:bg-cyan-700">Login</a>
+          <a href="register.html" class="border border-cyan-400 px-3 py-1 rounded hover:bg-cyan-600 text-cyan-300">Sign Up</a>
+        `;
+        dashboardContent.innerHTML = `<p class="text-center text-gray-400">Please log in to view your saved content.</p>`;
+      }
+    });
+  </script>
+</body>
+</html>

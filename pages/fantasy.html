@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fantasy Generator | DreamForge</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { opacity: 0; transition: opacity 0.35s ease-in; }
+    body.loaded { opacity: 1; }
+    .fantasy-btn { background: linear-gradient(90deg,#7b3b75,#5b2e6e 50%,#3b1f5a); color: white; font-weight: 600; padding: 0.85rem 1.1rem; border-radius: 0.75rem; box-shadow: 0 8px 26px rgba(79,21,79,0.25); transition: transform .12s ease, box-shadow .12s ease; display: inline-flex; align-items:center; gap:0.5rem; }
+    .fantasy-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(79,21,79,0.32); }
+    .small-3d { background: linear-gradient(90deg,#0ea5a7,#06b6d4); color:#082; padding:0.55rem 0.75rem; border-radius:0.6rem; font-weight:700; font-size:0.9rem; }
+    .fantasy-bg { background: linear-gradient(145deg, #1e0937, #3b0a54, #6b1c6e, #47245c); min-height: 100vh; }
+    .output-panel { background: rgba(23,6,36,0.6); border: 1px solid rgba(219,39,119,0.18); padding: 1rem; border-radius: 12px; }
+    pre#outputBox { min-height: 120px; white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; color: #f8f8f8; margin:0; }
+    #imageOutputBox { margin-top: 12px; display:flex; align-items:center; justify-content:center; flex-direction: column; gap:12px; }
+    #genPreview { max-width: 720px; width: 66%; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body class="fantasy-bg" data-theme="fantasy">
+  <nav class="bg-black/60 p-4 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <h1 class="text-xl text-pink-300 font-bold">DreamForge</h1>
+      <div id="auth-buttons" class="flex items-center gap-3"></div>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto p-6">
+    <header class="text-center mb-8">
+      <h2 class="text-4xl font-extrabold text-pink-300 mb-2">🧙‍♂️ Fantasy Generator</h2>
+      <p class="text-purple-200">Generate characters, worlds, weapons, logos and more.</p>
+    </header>
+
+    <!-- Buttons: match original layout -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <!-- Column 1: Character -->
+      <div class="flex items-center gap-3">
+        <button class="fantasy-btn w-full justify-center generate-btn" data-type="character">Generate Character</button>
+        <button id="character3DBtn" class="small-3d hidden require-auth" title="Generate 3D (.glb)">3D</button>
+      </div>
+
+      <!-- Column 2: Weapon -->
+      <div class="flex items-center gap-3">
+        <button class="fantasy-btn w-full justify-center generate-btn" data-type="weapon">Generate Weapon</button>
+        <button id="weapon3DBtn" class="small-3d hidden require-auth" title="Generate 3D (.glb)">3D</button>
+      </div>
+
+      <!-- Column 3: Logo -->
+      <div class="flex items-center gap-3">
+        <button class="fantasy-btn w-full justify-center generate-btn" data-type="logo">Generate Logo</button>
+      </div>
+
+      <!-- Row 2: World / Quest / Story (span full width on md) -->
+      <div class="md:col-span-3 flex gap-3 mt-2">
+        <button class="fantasy-btn flex-1 generate-btn" data-type="world">Generate World</button>
+        <button class="fantasy-btn flex-1 generate-btn" data-type="quest">Generate Quest</button>
+        <button class="fantasy-btn flex-1 generate-btn" data-type="story">Generate Story</button>
+      </div>
+    </section>
+
+    <section class="output-panel">
+      <h3 class="text-lg text-pink-300 mb-2">Generated Output</h3>
+      <pre id="outputBox">Click a Generate button to create content.</pre>
+
+      <div id="imageOutputBox" aria-live="polite"></div>
+
+      <div class="mt-4 flex gap-3 items-center">
+        <button id="saveBtn" class="fantasy-btn" disabled>💾 Save to Dashboard</button>
+        <button id="regenBtn" class="fantasy-btn">🔁 Regenerate</button>
+        <button id="downloadBtn" class="fantasy-btn hidden">⬇️ Download Image</button>
+        <div id="hint" class="text-gray-300 ml-4"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="text-center p-6 text-gray-400">© 2025 DreamForge</footer>
+
+  <script>window.addEventListener("load",()=>document.body.classList.add("loaded"));</script>
+
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+  import { firebaseConfig } from "/scripts/firebaseConfig.js";
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  (function(){
+    // DOM refs
+    const outputBox = document.getElementById("outputBox");
+    const imageOutputBox = document.getElementById("imageOutputBox");
+    const saveBtn = document.getElementById("saveBtn");
+    const regenBtn = document.getElementById("regenBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const authButtons = document.getElementById("auth-buttons");
+    const char3DBtn = document.getElementById("character3DBtn");
+    const weap3DBtn = document.getElementById("weapon3DBtn");
+    const hint = document.getElementById("hint");
+
+    const typeToCollection = {
+      character: "characters",
+      weapon: "weapons",
+      quest: "quests",
+      world: "worlds",
+      logo: "logos",
+      story: "stories",
+      "3d": "3dAssets"
+    };
+
+    let lastResult = null;
+    let currentUser = null;
+
+    function setOutput(title, message){
+      outputBox.textContent = title + "\n\n" + message;
+      outputBox.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+    function clearImagePreview(){
+      const prev = document.getElementById("genPreview");
+      if (prev) prev.remove();
+      downloadBtn.classList.add("hidden");
+    }
+    function dataURLToBlob(dataURL) {
+      const [meta, b64] = dataURL.split(',');
+      const mime = (meta.match(/data:([^;]+)/) || [])[1] || 'image/svg+xml';
+      const bin = atob(b64 || "");
+      const len = bin.length;
+      const arr = new Uint8Array(len);
+      for (let i = 0; i < len; i++) arr[i] = bin.charCodeAt(i);
+      return new Blob([arr], { type: mime });
+    }
+    function triggerBlobDownload(blob, filename) {
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+    }
+    async function downloadImageAndSave(url, filename) {
+      if (!url) { alert("No image to download"); return; }
+      const safeName = (filename || "download").replace(/\s+/g, "_").replace(/[^\w\-\._]/g, "").slice(0, 80);
+      if (typeof url === "string" && url.startsWith("data:")) {
+        try {
+          const blob = dataURLToBlob(url);
+          triggerBlobDownload(blob, `${safeName}.svg`);
+          return;
+        } catch (err) { console.warn(err); }
+      }
+      try {
+        const resp = await fetch(url);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          const mime = blob.type || "image/png";
+          const ext = mime.includes("/") ? mime.split("/")[1].split(";")[0] : "png";
+          triggerBlobDownload(blob, `${safeName}.${ext}`);
+          return;
+        }
+      } catch (e) {}
+      try {
+        const prox = `/api/proxy-image?url=${encodeURIComponent(url)}`;
+        const resp = await fetch(prox);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          const mime = resp.headers.get("Content-Type") || blob.type || "image/png";
+          const ext = mime.includes("/") ? mime.split("/")[1].split(";")[0] : "png";
+          triggerBlobDownload(blob, `${safeName}.${ext}`);
+          return;
+        }
+      } catch (e) {}
+      try { window.open(url, "_blank"); } catch(e) { alert("Unable to download. Open the image manually."); }
+    }
+
+    async function showImagePreview(imgField, title) {
+      clearImagePreview();
+      if (!imgField) return;
+      const img = document.createElement("img");
+      img.id = "genPreview";
+      img.alt = title || "Preview";
+      img.style.maxWidth = "720px";
+      img.style.width = "66%";
+      img.style.borderRadius = "8px";
+      img.style.boxShadow = "0 8px 30px rgba(0,0,0,0.35)";
+      imageOutputBox.appendChild(img);
+
+      if (typeof imgField === "string" && imgField.startsWith("data:")) {
+        img.src = imgField;
+        downloadBtn.classList.remove("hidden");
+        downloadBtn.onclick = () => downloadImageAndSave(imgField, title || "image");
+        return;
+      }
+      if (typeof imgField === "string") {
+        img.src = imgField;
+        img.onload = () => {
+          downloadBtn.classList.remove("hidden");
+          downloadBtn.onclick = () => downloadImageAndSave(imgField, title || "image");
+        };
+        img.onerror = () => { img.remove(); downloadBtn.classList.add("hidden"); };
+        return;
+      }
+    }
+
+    function unwrapServerResponse(json) {
+      let candidate = json;
+      if (typeof candidate === 'string') { try { candidate = JSON.parse(candidate); } catch {} }
+      for (let i=0;i<4;i++) {
+        if (candidate && typeof candidate === 'object') {
+          if ('ok' in candidate && candidate.ok === true && 'result' in candidate) candidate = candidate.result;
+          else break;
+        } else break;
+      }
+      return candidate;
+    }
+    function normalizeResult(result, requestedType) {
+      if (!result) return null;
+      if (typeof result === 'string') return { type: requestedType || 'unknown', title: '', text: result, image: null, meta: {}, raw: result };
+      if (Array.isArray(result)) return { type: requestedType || 'list', title: '', text: JSON.stringify(result, null, 2), image: null, meta: {}, raw: result };
+      const maybeTitle = result.title || result.name || result.label || '';
+      const text = result.text || result.description || result.summary || result.content || result.output || JSON.stringify(result, null, 2);
+      return { type: result.type || requestedType || 'unknown', title: maybeTitle, text, image: result.image || result.img || result.imageUrl || result.url || null, meta: result.meta || result.details || {} };
+    }
+    function formatForDisplay(normalized) {
+      if (!normalized) return { text: 'No content returned.' };
+      const titleLine = normalized.title ? normalized.title + "\n\n" : '';
+      let metaText = "";
+      if (normalized.meta && Object.keys(normalized.meta).length > 0) {
+        try {
+          const m = normalized.meta;
+          const parts = [];
+          if (m.species) parts.push(`Species: ${m.species}`);
+          if (m.abilities) parts.push(`Abilities: ${Array.isArray(m.abilities) ? m.abilities.join(', ') : m.abilities}`);
+          if (parts.length) metaText = "\n\n" + parts.join("\n");
+        } catch {}
+      }
+      return { text: titleLine + normalized.text + metaText, img: normalized.image || null };
+    }
+
+    async function callGenerate(type) {
+      setOutput('Generating...', `Type: ${type}\nTheme: fantasy\n\nPlease wait...`);
+      regenBtn.disabled = true;
+      clearImagePreview();
+      lastResult = { type };
+      try {
+        const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ theme: 'fantasy', type }) });
+        const raw = await res.text().catch(()=>null);
+        let parsed = null; try { parsed = raw ? JSON.parse(raw) : null; } catch { parsed = raw; }
+        if (!res.ok) { setOutput('Generation failed', (parsed && (parsed.error||parsed.message)) || res.statusText); regenBtn.disabled = false; return; }
+        const unwrapped = unwrapServerResponse(parsed ?? raw);
+        const normalized = normalizeResult(unwrapped, type);
+        if (!normalized) { setOutput('Generation failed','Empty response.'); regenBtn.disabled = false; return; }
+        lastResult = { type: normalized.type, title: normalized.title, text: normalized.text, image: normalized.image, meta: normalized.meta, raw: normalized.raw };
+        const display = formatForDisplay(normalized);
+        setOutput('Generation result', display.text);
+        await showImagePreview(display.img, normalized.title || 'Preview');
+
+        // enable save if user logged in
+        if (currentUser && lastResult) saveBtn.disabled = false;
+        regenBtn.disabled = false;
+      } catch (err) { setOutput('Generation failed', err?.message||String(err)); regenBtn.disabled = false; }
+    }
+
+    // Save content to server (server should route to correct collection by "collection" field or handle it)
+    async function saveToDashboard() {
+      if (!lastResult || !lastResult.text) { alert('Nothing to save'); return; }
+      const t = lastResult.type || 'unknown';
+      const coll = typeToCollection[t] || (t + 's');
+      const payload = {
+        uid: currentUser?.uid ?? null,
+        userEmail: currentUser?.email ?? null,
+        theme: 'fantasy',
+        type: t,
+        collection: coll,
+        title: lastResult.title || `Untitled ${t}`,
+        text: lastResult.text,
+        image: lastResult.image || null,
+        meta: lastResult.meta || {}
+      };
+
+      try {
+        const res = await fetch('/api/save-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json().catch(()=>null);
+        if (!res.ok || (json && json.ok === false)) {
+          console.error('save failed', json);
+          alert('Save failed. See server logs.');
+          return;
+        }
+        hint.textContent = "Saved ✔";
+        setTimeout(()=>hint.textContent = "", 1800);
+      } catch (err) {
+        console.error("save error", err);
+        alert('Save failed: ' + (err?.message || String(err)));
+      }
+    }
+
+    document.querySelectorAll(".generate-btn").forEach(b => b.addEventListener("click", () => callGenerate(b.dataset.type)));
+    regenBtn.addEventListener("click", () => { if (!lastResult?.type) { alert('Nothing to regenerate'); return; } callGenerate(lastResult.type); });
+    downloadBtn.addEventListener("click", () => { const candidate = lastResult?.image || null; if (!candidate) return alert("No image"); downloadImageAndSave(candidate, lastResult.title || "download"); });
+    saveBtn.addEventListener("click", saveToDashboard);
+    if (char3DBtn) char3DBtn.addEventListener("click", () => { alert("3D generation not yet hooked"); });
+    if (weap3DBtn) weap3DBtn.addEventListener("click", () => { alert("3D generation not yet hooked"); });
+
+    // Auth UI
+    function setAuthUI(user) {
+      currentUser = user || null;
+      if (user) {
+        authButtons.innerHTML = `<span class='text-sm text-gray-300'>${user.email || ""}</span>
+                                 <button id="logoutBtn" class="ml-2 px-3 py-1 rounded bg-gray-800 text-white">Logout</button>`;
+        document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth).then(()=> location.href='index.html').catch(console.error));
+        // show 3D buttons only to logged in users
+        char3DBtn.classList.remove("hidden");
+        weap3DBtn.classList.remove("hidden");
+        // enable save if there's content
+        if (lastResult && lastResult.text) saveBtn.disabled = false;
+      } else {
+        authButtons.innerHTML = `<a href="login.html" class="px-3 py-1 rounded bg-cyan-600 text-white">Login</a>
+                                 <a href="register.html" class="ml-2 px-3 py-1 rounded border border-pink-400 text-pink-300">Sign Up</a>`;
+        char3DBtn.classList.add("hidden");
+        weap3DBtn.classList.add("hidden");
+        saveBtn.disabled = true;
+      }
+    }
+
+    onAuthStateChanged(auth, (user) => setAuthUI(user));
+  })();
+  </script>
+</body>
+</html>

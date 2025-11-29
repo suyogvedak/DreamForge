@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cyberpunk Generator | DreamForge</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { background: linear-gradient(135deg,#0d0d0d,#1a1a2e,#111827); opacity: 0; transition: opacity .6s ease-in; }
+    body.loaded { opacity: 1; }
+    .neon-btn { background: linear-gradient(45deg,#00ffff,#0088ff); color:black; font-weight:600; padding:1rem 1.25rem; border-radius:.5rem; box-shadow:0 0 15px #00ffff; display:inline-block; }
+    .neon-btn.small { padding:.45rem .8rem; font-size:.95rem; }
+    .glass { background: rgba(0,0,0,.65); border:1px solid #00ffff; backdrop-filter: blur(8px); padding:1rem; }
+    pre#outputBox { min-height:160px; white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; color:#dbeafe; }
+    .require-auth { display:none; } /* JS will toggle inline with !important to override any CSS */
+    .muted { color:#9ca3af; font-size:0.95rem; }
+  </style>
+</head>
+<body class="text-white font-sans min-h-screen" data-theme="cyberpunk">
+
+  <nav class="bg-black/80 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-cyan-400 text-2xl font-bold cursor-pointer" onclick="location.href='index.html'">DreamForge</h1>
+      <div id="auth-buttons" class="space-x-4"></div>
+    </div>
+  </nav>
+
+  <main class="text-center py-14">
+    <h2 class="text-5xl font-extrabold text-cyan-300 mb-4">⚡ Cyberpunk Generator</h2>
+    <p class="text-gray-300 mb-8">Neon-lit cities, rogue AIs and synth rebels.</p>
+
+    <section class="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4 mb-10">
+      <div class="flex gap-3 items-center justify-center">
+        <button class="neon-btn generate-btn" data-type="character">Generate Character</button>
+        <button id="character3DBtn" class="neon-btn small require-auth">3D</button>
+      </div>
+      <div class="flex gap-3 items-center justify-center">
+        <button class="neon-btn generate-btn" data-type="weapon">Generate Weapon</button>
+        <button id="weapon3DBtn" class="neon-btn small require-auth">3D</button>
+      </div>
+      <div class="flex gap-3 items-center justify-center">
+        <button class="neon-btn generate-btn" data-type="logo">Generate Logo</button>
+      </div>
+
+      <div class="flex gap-3 items-center justify-center">
+        <button class="neon-btn generate-btn" data-type="world">Generate World</button>
+      </div>
+      <div class="flex gap-3 items-center justify-center">
+        <button class="neon-btn generate-btn" data-type="quest">Generate Quest</button>
+      </div>
+      <div class="flex gap-3 items-center justify-center">
+        <button class="neon-btn generate-btn" data-type="story">Generate Story</button>
+      </div>
+    </section>
+
+    <section class="max-w-3xl mx-auto px-4">
+      <div class="glass rounded-lg p-6">
+        <h3 class="text-2xl text-cyan-300 mb-4">🧠 Generated Output:</h3>
+        <pre id="outputBox">Click a Generate button to create content.</pre>
+
+        <div class="mt-4 flex gap-3 items-center">
+          <button id="saveBtn" class="neon-btn require-auth">💾 Save to Dashboard</button>
+          <button id="regenBtn" class="neon-btn" disabled>🔁 Regenerate</button>
+          <button id="downloadBtn" class="neon-btn hidden">⬇️ Download Image</button>
+          <div id="hint" class="muted ml-3">Generate something to enable regenerate</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="text-center py-6 text-gray-400 text-sm">© 2025 DreamForge</footer>
+
+  <script>window.addEventListener('load',()=>document.body.classList.add('loaded'));</script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    import { firebaseConfig } from "/scripts/firebaseConfig.js";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const authButtons = document.getElementById('auth-buttons');
+    const outputBox = document.getElementById('outputBox');
+    const saveBtn = document.getElementById('saveBtn');
+    const regenBtn = document.getElementById('regenBtn');
+    const hint = document.getElementById('hint');
+    const char3DBtn = document.getElementById('character3DBtn');
+    const weap3DBtn = document.getElementById('weapon3DBtn');
+    const downloadBtn = document.getElementById("downloadBtn").addEventListener("click", () => {
+       if (!window.__df_lastImageUrl) return;
+        const link = document.createElement("a");
+        link.href = window.__df_lastImageUrl;
+        link.download = "dreamforge_logo.png";
+        link.click();
+      });
+
+
+    const theme = String(document.body.dataset.theme || 'cyberpunk');
+
+    let currentUser = null;
+    // lastGenerated holds normalized { type, title, text, image, meta, raw }
+    let lastGenerated = null;
+
+    // Use inline style with important to override stubborn CSS
+    function setRequireAuthVisibility(show) {
+      document.querySelectorAll('.require-auth').forEach(el => {
+        const display = (el.tagName || '').toLowerCase() === 'button' ? 'inline-block' : 'block';
+        if (show) el.style.setProperty('display', display, 'important');
+        else el.style.setProperty('display', 'none', 'important');
+      });
+      // only show save when logged in and we have content text
+      if (saveBtn) {
+        if (show && lastGenerated?.text) saveBtn.style.setProperty('display', 'inline-block', 'important');
+        else saveBtn.style.setProperty('display', 'none', 'important');
+      }
+    }
+
+    function setOutput(title, message) {
+      outputBox.textContent = `${title}\n\n${message}`;
+      outputBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    function appendOutput(msg) {
+      outputBox.textContent += `\n\n${msg}`;
+    }
+
+    // Unwrap possible nested envelopes / stringify safely
+    function unwrapServerResponse(json) {
+      // Accept either { ok:true, result: ... } or direct result
+      let candidate = json;
+      // If string that looks like JSON, parse
+      if (typeof candidate === 'string') {
+        try { candidate = JSON.parse(candidate); } catch {}
+      }
+
+      // Unwrap repeatedly (max 4 layers)
+      for (let i = 0; i < 4; i++) {
+        if (candidate && typeof candidate === 'object') {
+          if ('ok' in candidate && candidate.ok === true && 'result' in candidate) candidate = candidate.result;
+          else break;
+        } else break;
+      }
+      return candidate;
+    }
+
+    // Normalize many possible shapes into { title, text, image, meta, type, raw }
+    function normalizeResult(result, requestedType) {
+      if (!result) return null;
+
+      // If result is a string -> place in text
+      if (typeof result === 'string') {
+        return { type: requestedType || 'unknown', title: '', text: result, image: null, meta: {}, raw: result };
+      }
+
+      // If result is array -> stringify nicely
+      if (Array.isArray(result)) {
+        return { type: requestedType || 'list', title: '', text: JSON.stringify(result, null, 2), image: null, meta: {}, raw: result };
+      }
+
+      // result is object
+      // Common generator fields: title, text, description, summary, image, meta
+      const hasText = 'text' in result || 'description' in result || 'summary' in result;
+      const maybeTitle = result.title || result.name || result.label || '';
+      const text = result.text || result.description || result.summary || (hasText ? '' : JSON.stringify(result, null, 2));
+
+      // Detect "echo" shapes (server returned your input) e.g. { type: 'character', input: { theme: 'cyberpunk', type:'character' } }
+      const looksLikeEcho = (('input' in result) && Object.keys(result).length <= 2 && result.input && typeof result.input === 'object');
+
+      if (looksLikeEcho) {
+        // Return a special object that signals echo
+        return { _echo: true, raw: result, type: result.type || requestedType || 'unknown', title: maybeTitle, text: JSON.stringify(result, null, 2), image: null, meta: {} };
+      }
+
+      return {
+        type: result.type || requestedType || 'unknown',
+        title: maybeTitle,
+        text,
+        image: result.image || null,
+        meta: result.meta || {},
+        raw: result
+      };
+    }
+
+    // Display-friendly format
+    function formatForDisplay(normalized) {
+      if (!normalized) return { text: 'No content returned.' };
+      if (normalized._echo) {
+        return { text: `Generation failed: server returned input/echo instead of content.\n\nServer response:\n${normalized.text}\n\nTip: check server logs or generator modules for errors.` };
+      }
+      // If image present, show below text (we create an <img>)
+      const titleLine = normalized.title ? normalized.title + '\n\n' : '';
+      return { text: titleLine + normalized.text, img: normalized.image || null };
+    }
+
+    // ----- call generate -----
+    async function callGenerate(type) {
+      setOutput('Generating...', `Type: ${type}\nTheme: ${theme}\n\nPlease wait...`);
+      regenBtn.disabled = true;
+      hint.textContent = '';
+      lastGenerated = { type };
+
+      try {
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ theme, type })
+        });
+
+        // If server returned non-json (like 500 plain text), show it
+        const raw = await res.text().catch(()=>null);
+        let parsed = null;
+        try { parsed = raw ? JSON.parse(raw) : null; } catch { parsed = raw; }
+
+        if (!res.ok) {
+          const serverMsg = (parsed && (parsed.error || parsed.message)) || (typeof parsed === 'string' ? parsed : res.statusText);
+          setOutput('Generation failed: Server Error', serverMsg);
+          return;
+        }
+
+        // Unwrap envelope if present
+        const unwrapped = unwrapServerResponse(parsed ?? raw);
+
+        // Normalize
+        const normalized = normalizeResult(unwrapped, type);
+
+        // If server returned a weird echo, show helpful message and do not enable save/regenerate
+        if (!normalized) {
+          setOutput('Generation failed', 'Generator returned an empty response.');
+          return;
+        }
+        if (normalized._echo) {
+          setOutput('Generation failed: Unexpected server response', 'The generator endpoint returned the request/input rather than generated content.\n\nServer response:\n' + JSON.stringify(normalized.raw, null, 2) + '\n\nTip: Check server logs and that generator modules are loaded correctly.');
+          regenBtn.disabled = false; // allow retry
+          return;
+        }
+
+        // Successful normalized content
+        lastGenerated = {
+          type: normalized.type,
+          title: normalized.title,
+          text: normalized.text,
+          image: normalized.image,
+          meta: normalized.meta,
+          raw: normalized.raw
+        };
+
+        const display = formatForDisplay(normalized);
+        setOutput('Generation result', display.text);
+
+        // image preview if any
+        const prev = document.getElementById('genPreview');
+        if (prev) prev.remove();
+        if (display.img) {
+          const img = document.createElement('img');
+          img.id = 'genPreview';
+          img.src = display.img;
+          img.alt = 'Preview';
+          img.style.maxWidth = '1080px';
+          img.style.marginTop = '1080px';
+          outputBox.parentNode.appendChild(img);
+        }
+
+        regenBtn.disabled = false;
+        hint.textContent = '';
+        if (currentUser) setRequireAuthVisibility(true);
+      } catch (err) {
+        console.error('generate error', err);
+        setOutput('Generation failed: Network/Exception', err?.message || String(err));
+        regenBtn.disabled = false;
+      }
+    }
+
+    // ----- save to server (Atlas preferred, server handles fallback) -----
+    async function saveToDashboard() {
+      if (!currentUser) { alert('Please log in to save'); return; }
+      if (!lastGenerated?.text) { alert('Nothing to save — generate first.'); return; }
+
+      // normalize payload for save route
+      const payload = {
+        uid: currentUser.uid,
+        userEmail: currentUser.email || null,
+        theme,
+        type: lastGenerated.type || 'unknown',
+        title: lastGenerated.title || 'Untitled',
+        text: lastGenerated.text || '',
+        image: lastGenerated.image || null,
+        meta: lastGenerated.meta || {}
+      };
+
+      try {
+        const res = await fetch('/api/save-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json().catch(()=>null);
+
+        if (!res.ok || (json && json.ok === false)) {
+          const msg = (json && (json.error || JSON.message)) || res.statusText || JSON.stringify(json);
+          alert('Save failed: ' + msg);
+          return;
+        }
+
+        const result = json?.result || json || {};
+        // result.storage can be 'mongodb' or 'file' or 'file:fallback'
+        if (result.storage === 'mongodb' || result.insertedId) {
+          alert('Saved to MongoDB Atlas.\nid: ' + (result.insertedId || result.insertedId?.toString?.() || '(unknown)'));
+        } else if (result.storage && String(result.storage).startsWith('file')) {
+          alert('Saved locally to file: ' + (result.file || 'data/saves.json') + (result.warning ? '\nWarning: ' + result.warning : ''));
+        } else {
+          alert('Saved: ' + JSON.stringify(result));
+        }
+      } catch (err) {
+        console.error('save error', err);
+        alert('Save failed: ' + (err?.message || String(err)));
+      }
+    }
+
+    // ----- 3D request (friendly fallback) -----
+    async function request3D(type) {
+      setOutput('3D generation started', `Attempting to produce a .glb for ${type}...`);
+      appendOutput('If the environment cannot produce .glb, a helpful failure message will appear shortly.');
+      try {
+        const res = await fetch(`/api/model3d/${type}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ theme, type })
+        });
+        const json = await res.json().catch(()=>null);
+        if (res.ok && json?.result?.url) {
+          setOutput('3D ready', `Model URL: ${json.result.url}`);
+          window.open(json.result.url, '_blank');
+          return;
+        }
+        setTimeout(() => {
+          const serverMsg = json?.error || json?.result || json || res.statusText || 'No details.';
+          appendOutput('3D generation failed: .glb could not be produced due to environment limitations.\n\nServer message:\n' + JSON.stringify(serverMsg));
+        }, 1300);
+      } catch (err) {
+        setTimeout(() => appendOutput('3D generation failed: ' + (err?.message || String(err))), 1300);
+      }
+    }
+
+    // ----- wire UI -----
+    document.querySelectorAll('.generate-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        callGenerate(btn.dataset.type);
+      });
+    });
+
+    regenBtn.addEventListener('click', () => {
+      if (!lastGenerated?.type) { alert('Nothing to regenerate'); return; }
+      callGenerate(lastGenerated.type);
+    });
+
+    if (saveBtn) saveBtn.addEventListener('click', saveToDashboard);
+    if (char3DBtn) char3DBtn.addEventListener('click', () => request3D('character'));
+    if (weap3DBtn) weap3DBtn.addEventListener('click', () => request3D('weapon'));
+
+    // ----- auth UI handling -----
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user ?? null;
+      if (currentUser) {
+        if (authButtons) authButtons.innerHTML = `<span class="text-gray-300 pr-3">${currentUser.email}</span><button id="logoutBtn" class="neon-btn small">Logout</button>`;
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth).then(()=> location.reload()));
+        setRequireAuthVisibility(true);
+      } else {
+        if (authButtons) authButtons.innerHTML = `<a href="login.html" class="neon-btn small">Login</a>`;
+        setRequireAuthVisibility(false);
+      }
+    });
+
+    // quick immediate check if already signed in
+    if (auth.currentUser) {
+      currentUser = auth.currentUser;
+      setRequireAuthVisibility(true);
+    }
+  </script>
+</body>
+</html>

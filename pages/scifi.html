@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sci-Fi Generator | DreamForge</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/styles/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Orbitron', sans-serif;
+      opacity: 0;
+      transition: opacity 0.8s ease-in;
+      background-color: #000;
+      background-image: radial-gradient(circle at 20% 30%, rgba(30, 58, 138, 0.2), transparent 70%),
+                        radial-gradient(circle at 80% 60%, rgba(99, 102, 241, 0.1), transparent 70%);
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      color: #cbd5e1;
+    }
+    body.loaded { opacity: 1; }
+    .scifi-btn {
+      background: linear-gradient(to right, #3b82f6, #1e40af);
+      color: #e0f2fe;
+      padding: 1rem 1.5rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      box-shadow: 0 0 10px #60a5fa88;
+      transition: all 0.3s ease;
+    }
+    .scifi-btn:hover {
+      background: linear-gradient(to right, #1e3a8a, #3b82f6);
+      transform: scale(1.05);
+      box-shadow: 0 0 20px #93c5fdcc;
+    }
+    .glow-box {
+      border: 1px solid #3b82f6;
+      background-color: rgba(0, 20, 40, 0.8);
+      box-shadow: 0 0 20px #60a5fa55;
+      padding: 1rem;
+    }
+    .btn-row { display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap; }
+    .small-btn { padding: 0.55rem 0.9rem; font-size:0.95rem; border-radius:0.6rem; }
+    pre#outputBox { min-height: 140px; white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; color:#cfe8ff; }
+    .require-auth { display: none; } /* toggled by JS if auth present */
+    #genPreview { margin-top: 12px; max-width: 360px; border-radius: 6px; display:block; }
+  </style>
+</head>
+<body class="" data-theme="scifi">
+
+  <!-- Navbar -->
+  <nav class="bg-black/80 backdrop-blur sticky top-0 z-50 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-indigo-400 cursor-pointer" onclick="location.href='index.html'">DreamForge</h1>
+      <div id="auth-buttons" class="space-x-4"></div>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <section class="text-center py-12 px-4">
+    <h2 class="text-4xl font-extrabold text-indigo-400 mb-4">🚀 Sci-Fi Content Generator</h2>
+    <p class="text-lg text-indigo-300 max-w-3xl mx-auto">
+      Build galactic characters, planets, logos, and space quests using hybrid AI + logic.
+    </p>
+  </section>
+
+  <!-- Generator Buttons -->
+  <section class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto px-4 mb-10">
+    <div class="flex items-center">
+      <div class="btn-row">
+        <button class="scifi-btn generate-btn" data-type="character" id="genCharacterBtn">Generate Character</button>
+        <!-- 3D placeholder -->
+        <button class="scifi-btn small-btn" id="character3DBtn">3D</button>
+      </div>
+    </div>
+
+    <div class="flex items-center">
+      <div class="btn-row">
+        <button class="scifi-btn generate-btn" data-type="weapon" id="genWeaponBtn">Generate Weapon</button>
+        <button class="scifi-btn small-btn" id="weapon3DBtn">3D</button>
+      </div>
+    </div>
+
+    <div class="flex items-center">
+      <button class="scifi-btn generate-btn" data-type="logo">Generate Logo</button>
+    </div>
+
+    <div class="flex items-center">
+      <button class="scifi-btn generate-btn" data-type="world">Generate World</button>
+    </div>
+
+    <div class="flex items-center">
+      <button class="scifi-btn generate-btn" data-type="quest">Generate Quest</button>
+    </div>
+
+    <div class="flex items-center">
+      <button class="scifi-btn generate-btn" data-type="story">Generate Story</button>
+    </div>
+  </section>
+
+  <!-- Output Section -->
+  <section class="max-w-4xl mx-auto py-10 px-4">
+    <div class="glow-box rounded-lg">
+      <h3 class="text-xl font-semibold text-indigo-300 mb-4">Generated Output:</h3>
+      <pre id="outputBox" class="whitespace-pre-wrap">Click a Generate button to create content.</pre>
+      <div id="genImageWrapper"></div>
+
+      <div id="save-section" class="mt-4" style="display:flex; gap:0.75rem; align-items:center;">
+        <button id="saveBtn" class="mt-2 scifi-btn small-btn">💾 Save to Dashboard</button>
+        <button id="regenBtn" class="mt-2 scifi-btn small-btn">🔁 Regenerate</button>
+        <!-- Download button added -->
+        <button id="downloadBtn" class="mt-2 scifi-btn small-btn hidden">⬇️ Download Image</button>
+
+        <div id="hint" class="text-indigo-300 ml-3"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-black text-center py-6 text-gray-500 text-sm mt-10">
+    © 2025 DreamForge | Sci-Fi Generator
+  </footer>
+
+  <!-- Fade-in Animation -->
+  <script>
+    window.addEventListener("load", () => { document.body.classList.add("loaded"); });
+  </script>
+
+  <!-- Main logic: safe firebase + server API integration, preserves styling -->
+  <script type="module">
+    // dynamic load of firebase libs + firebaseConfig so missing config won't break the page
+    let initializeApp, getAuth, onAuthStateChanged, signOut;
+    let firebaseConfig = null;
+
+    try {
+      const fbApp = await import("https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js");
+      initializeApp = fbApp.initializeApp;
+      const fbAuth = await import("https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js");
+      getAuth = fbAuth.getAuth;
+      onAuthStateChanged = fbAuth.onAuthStateChanged;
+      signOut = fbAuth.signOut;
+    } catch (err) {
+      console.warn("Firebase libs failed to load — auth disabled for now.", err);
+    }
+
+    // try to import firebaseConfig from /scripts then ../scripts
+    try {
+      const cfg = await import("/scripts/firebaseConfig.js");
+      firebaseConfig = cfg.firebaseConfig ?? cfg.default ?? null;
+    } catch (err) {
+      try {
+        const cfg2 = await import("../scripts/firebaseConfig.js");
+        firebaseConfig = cfg2.firebaseConfig ?? cfg2.default ?? null;
+      } catch (err2) {
+        console.warn("No firebaseConfig found — continuing without Firebase config.", err2);
+      }
+    }
+
+    let app = null, auth = null;
+    if (initializeApp && firebaseConfig) {
+      try {
+        app = initializeApp(firebaseConfig);
+        if (getAuth) auth = getAuth(app);
+      } catch (err) {
+        console.warn("Firebase init failed:", err);
+        app = null; auth = null;
+      }
+    }
+
+    // UI references
+    const authButtons = document.getElementById("auth-buttons");
+    const outputBox = document.getElementById("outputBox");
+    const saveSection = document.getElementById("save-section");
+    const saveBtn = document.getElementById("saveBtn");
+    const regenBtn = document.getElementById("regenBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const hint = document.getElementById("hint");
+    const char3DBtn = document.getElementById("character3DBtn");
+    const weap3DBtn = document.getElementById("weapon3DBtn");
+    const genImageWrapper = document.getElementById("genImageWrapper");
+
+    const theme = String(document.body.dataset.theme || "scifi");
+    let lastGenerated = null;
+    let currentUser = null;
+
+    // show/hide UI items based on auth — but keep buttons visible for dev testing
+    function showRequireAuth(show) {
+      document.querySelectorAll(".require-auth").forEach(el => el.style.display = show ? "" : "none");
+      // Save button visible if authed and we have content; otherwise still visible for dev testing
+      if (show && lastGenerated?.text) saveBtn.style.display = "";
+      else saveBtn.style.display = ""; // keep visible by default
+    }
+
+    function setOutput(title, message) {
+      outputBox.textContent = `${title}\n\n${message}`;
+      outputBox.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    function appendOutput(message) {
+      outputBox.textContent += `\n\n${message}`;
+      outputBox.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function formatGeneratedDisplay(content, type) {
+      if (!content) return { text: "No content returned." };
+      const title = content.title || content.name || "";
+      let main = content.text || content.description || content.summary || "";
+      if (!main && typeof content === "string") main = content;
+      if (!main && typeof content === "object") main = JSON.stringify(content, null, 2);
+      if (type === "character" && content.meta?.traits) main += `\n\nTraits: ${Array.isArray(content.meta.traits) ? content.meta.traits.join(", ") : content.meta.traits}`;
+      if (type === "weapon" && content.meta?.damage) main += `\n\nDamage: ${content.meta.damage}`;
+      return { text: `${title ? title + "\n\n" : ""}${main}`, title, img: content.image || content.img || null };
+    }
+
+    // helper: create filename-safe string
+    function safeFilename(name) {
+      return (name || "download").replace(/\s+/g, "_").replace(/[^\w\-\._]/g, "").slice(0, 100);
+    }
+
+    // Download helper: supports data URIs and remote URLs (best-effort)
+    async function downloadImageAndSave(url, filename) {
+      if (!url) { alert("No image to download"); return; }
+      const name = safeFilename(filename);
+
+      // data URI
+      if (typeof url === "string" && url.startsWith("data:")) {
+        try {
+          const parts = url.split(',');
+          const meta = parts[0] || '';
+          const b64 = parts[1] || '';
+          const mime = (meta.match(/data:([^;]+)/) || [])[1] || 'image/svg+xml';
+          const bin = atob(b64);
+          const len = bin.length;
+          const arr = new Uint8Array(len);
+          for (let i=0;i<len;i++) arr[i] = bin.charCodeAt(i);
+          const blob = new Blob([arr], { type: mime });
+          const ext = mime.includes('/') ? mime.split('/')[1].split(';')[0] : 'svg';
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = blobUrl; a.download = `${name}.${ext}`; document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(()=> URL.revokeObjectURL(blobUrl), 2000);
+          return;
+        } catch (e) {
+          console.warn("data URI download failed", e);
+        }
+      }
+
+      // try direct fetch
+      try {
+        const resp = await fetch(url);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          const mime = blob.type || 'image/png';
+          const ext = mime.includes('/') ? mime.split('/')[1].split(';')[0] : 'png';
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = blobUrl; a.download = `${name}.${ext}`; document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(()=> URL.revokeObjectURL(blobUrl), 2000);
+          return;
+        }
+      } catch (e) {
+        console.warn("Direct fetch failed, opening image instead", e);
+      }
+
+      // fallback: open in new tab
+      window.open(url, "_blank");
+    }
+
+    // Call API generate
+    async function callGenerate(type) {
+      setOutput("Generating...", `Type: ${type}\nTheme: ${theme}\n\nPlease wait...`);
+      regenBtn.disabled = true;
+      lastGenerated = { type };
+
+      // remove existing preview image
+      const existing = document.getElementById("genPreview");
+      if (existing) existing.remove();
+      downloadBtn.classList.add("hidden");
+
+      try {
+        const res = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ theme, type })
+        });
+
+        const json = await res.json().catch(()=>null);
+        if (!res.ok || !json) {
+          const txt = json?.error || (json && JSON.stringify(json)) || res.statusText;
+          setOutput("Generation failed", txt);
+          regenBtn.disabled = false;
+          return;
+        }
+
+        if (json.ok === false) {
+          setOutput("Generation failed", json.error || JSON.stringify(json));
+          regenBtn.disabled = false;
+          return;
+        }
+
+        const result = json.result ?? json;
+        const normalized = {
+          title: result.title || result.name || "",
+          text: result.text || result.description || result.summary || (typeof result === "string" ? result : JSON.stringify(result)),
+          image: result.image || result.img || null,
+          meta: result.meta || {}
+        };
+
+        lastGenerated = { type, raw: result, ...normalized };
+
+        const display = formatGeneratedDisplay(normalized, type);
+        setOutput("Generation result", display.text);
+
+        // image preview: add into genImageWrapper
+        if (display.img) {
+          // remove previous
+          const prev = document.getElementById("genPreview");
+          if (prev) prev.remove();
+          const img = document.createElement("img");
+          img.id = "genPreview";
+          img.src = display.img;
+          img.alt = display.title || "Preview";
+          img.style.maxWidth = "360px";
+          img.style.borderRadius = "6px";
+          img.style.display = "block";
+          genImageWrapper.appendChild(img);
+
+          // reveal download button
+          downloadBtn.classList.remove("hidden");
+          downloadBtn.onclick = () => downloadImageAndSave(display.img, display.title || `${type}_image`);
+
+          // store image URL for save/download
+          lastGenerated.image = display.img;
+        } else {
+          lastGenerated.image = null;
+          downloadBtn.classList.add("hidden");
+        }
+
+        regenBtn.disabled = false;
+      } catch (err) {
+        console.error("generate error", err);
+        setOutput("Generation failed", err.message || String(err));
+        regenBtn.disabled = false;
+      }
+    }
+
+    // Save to dashboard: now includes collection mapping and uid/userEmail when available
+   // Replace your existing saveToDashboard with this function
+// Replace the existing saveToDashboard() in scifi.html with this function
+// Sci-Fi page save function — aligned with Fantasy's working version
+async function saveToDashboard() {
+  if (!currentUser || !currentUser.uid) {
+    alert("You must be logged in to save to dashboard.");
+    return;
+  }
+
+  if (!lastGenerated?.text) {
+    alert("Nothing to save — generate content first.");
+    return;
+  }
+
+  const payload = {
+    uid: currentUser.uid,
+    userEmail: currentUser.email,
+    theme: "scifi", // explicitly Sci-Fi theme
+    type: lastGenerated.type,
+    title: lastGenerated.title || `Untitled ${lastGenerated.type}`,
+    text: lastGenerated.text,
+    image: lastGenerated.image || null,
+    meta: lastGenerated.meta || {},
+    raw: lastGenerated.raw || null
+  };
+
+  try {
+    const res = await fetch("/api/save-content", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const json = await res.json();
+    if (!res.ok || (json && json.ok === false)) {
+      console.error("Save failed:", json);
+      alert("Save failed: " + (json?.error || res.statusText));
+      return;
+    }
+
+    alert("Saved to Dashboard ✅");
+  } catch (err) {
+    console.error("Save error:", err);
+    alert("Save failed: " + (err.message || err));
+  }
+}
+
+// Bind to your button
+document.getElementById("saveBtn").addEventListener("click", saveToDashboard);
+
+    // 3D generation request (keeps same behaviour)
+    async function request3D(type) {
+      setOutput("3D generation started", `Attempting to produce a .glb for ${type}.`);
+      appendOutput("Processing 3D model...");
+      try {
+        const res = await fetch(`/api/model3d/${type}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ theme, type })
+        });
+        const json = await res.json().catch(()=>null);
+        if (res.ok && json?.ok !== false && json?.result?.url) {
+          setOutput("3D generation complete", `Model ready: ${json.result.url}`);
+          window.open(json.result.url, "_blank");
+          return;
+        }
+        setTimeout(() => {
+          const serverMsg = json?.error || json?.result || json || res.statusText || "No details";
+          appendOutput(`3D generation failed: .glb could not be produced.\n\nServer message:\n${JSON.stringify(serverMsg)}`);
+        }, 1400);
+      } catch (err) {
+        setTimeout(() => appendOutput(`3D generation failed: ${err?.message || String(err)}`), 1400);
+      }
+    }
+
+    // Bind UI events
+    document.querySelectorAll(".generate-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const type = btn.dataset.type;
+        if (type) callGenerate(type);
+      });
+    });
+
+    regenBtn.addEventListener("click", () => {
+      if (!lastGenerated?.type) { alert("Nothing to regenerate."); return; }
+      callGenerate(lastGenerated.type);
+    });
+
+    saveBtn.addEventListener("click", saveToDashboard);
+    downloadBtn.addEventListener("click", () => {
+      if (!lastGenerated?.image) return alert("No image to download");
+      downloadImageAndSave(lastGenerated.image, lastGenerated.title || `${lastGenerated.type}_image`);
+    });
+    char3DBtn.addEventListener("click", () => request3D("character"));
+    weap3DBtn.addEventListener("click", () => request3D("weapon"));
+
+    // Auth display logic (if firebase present)
+    if (typeof onAuthStateChanged === "function" && auth) {
+      onAuthStateChanged(auth, (user) => {
+        currentUser = user ?? null;
+        if (currentUser) {
+          authButtons.innerHTML = `<span class='text-sm text-gray-300'>${currentUser.email}</span><button id="logoutBtn" class="scifi-btn small-btn">Logout</button>`;
+          const logoutBtn = document.getElementById("logoutBtn");
+          if (logoutBtn) logoutBtn.addEventListener("click", () => signOut(auth).then(()=> location.reload()));
+          showRequireAuth(true);
+        } else {
+          authButtons.innerHTML = `<a href="login.html" class="scifi-btn small-btn">Login</a><a href="register.html" class="scifi-btn small-btn">Sign Up</a>`;
+          currentUser = null;
+          showRequireAuth(false);
+        }
+      });
+    } else {
+      // no firebase — still allow saving (server may accept anonymous saves) and show login link
+      authButtons.innerHTML = `<a href="login.html" class="scifi-btn small-btn">Login</a>`;
+      showRequireAuth(false);
+    }
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DreamForge – World & Character Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          animation: {
+            fadeIn: "fadeIn 1s ease-in-out",
+            slideUp: "slideUp 0.6s ease-in-out",
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: 0 },
+              '100%': { opacity: 1 },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(20px)', opacity: 0 },
+              '100%': { transform: 'translateY(0)', opacity: 1 },
+            },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { opacity: 0; transition: opacity 0.8s ease-in; }
+  </style>
+</head>
+<body class="bg-gray-950 text-white font-sans">
+
+  <!-- ✅ Scroll Progress Bar -->
+  <div id="scroll-progress" class="fixed top-0 left-0 h-1 bg-cyan-400 z-50" style="width: 0%;"></div>
+
+  <!-- ✅ Navbar -->
+  <nav class="bg-gray-900 shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-cyan-400">DreamForge</h1>
+      <div id="navbar-user" class="space-x-4">
+        <!-- Firebase will inject login/signup or user details here -->
+      </div>
+    </div>
+  </nav>
+
+  <!-- ✅ Hero Section -->
+  <section class="text-center py-20 px-4 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950">
+    <h2 class="text-4xl font-extrabold text-cyan-400 mb-4 animate-fadeIn">Unleash Infinite Worlds & Characters</h2>
+    <p class="text-lg max-w-3xl mx-auto text-gray-300 animate-slideUp">
+      DreamForge is your intelligent assistant to build fantasy, sci-fi, and cyberpunk characters, worlds, quests, and visuals using AI + logic trees.
+    </p>
+  </section>
+
+  <!-- ✅ Features Section -->
+  <section class="py-16 bg-gray-900">
+    <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+      <div class="p-6 border border-gray-700 rounded-xl bg-gray-800 hover:shadow-lg transition">
+        <h3 class="text-xl font-semibold text-cyan-300">🤖 AI + Logic</h3>
+        <p class="text-gray-300 mt-2">Hybrid generation using OpenAI + logic trees with offline fallback.</p>
+      </div>
+      <div class="p-6 border border-gray-700 rounded-xl bg-gray-800 hover:shadow-lg transition">
+        <h3 class="text-xl font-semibold text-yellow-300">🧙 Character & World Builder</h3>
+        <p class="text-gray-300 mt-2">Create everything from names to magic systems and races.</p>
+      </div>
+      <div class="p-6 border border-gray-700 rounded-xl bg-gray-800 hover:shadow-lg transition">
+        <h3 class="text-xl font-semibold text-indigo-300">🗃️ Dashboard & Save</h3>
+        <p class="text-gray-300 mt-2">Log in to view, export, or download your creations & 3D assets.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ✅ Theme Selection -->
+  <section class="py-20 bg-gray-950">
+    <div class="max-w-6xl mx-auto px-4 text-center mb-10">
+      <h2 class="text-3xl font-bold text-white mb-4">Explore Your Genre</h2>
+      <p class="text-gray-400">Pick a world to start building content tailored to that universe.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto px-4">
+      <!-- Cyberpunk -->
+      <a href="cyberpunk.html" class="bg-gradient-to-r from-cyan-800 to-gray-800 p-6 rounded-lg text-center hover:scale-105 transition shadow-md">
+        <h3 class="text-2xl font-semibold text-cyan-300 mb-2">⚡ Cyberpunk</h3>
+        <p class="text-gray-200">Neon cities, cyber rebels, AI warfare. Enter the chrome age.</p>
+      </a>
+
+      <!-- Fantasy -->
+      <a href="fantasy.html" class="bg-gradient-to-r from-yellow-800 to-gray-800 p-6 rounded-lg text-center hover:scale-105 transition shadow-md">
+        <h3 class="text-2xl font-semibold text-yellow-300 mb-2">🧙 Fantasy</h3>
+        <p class="text-gray-200">Castles, dragons, and ancient spells await your creation.</p>
+      </a>
+
+      <!-- Sci-Fi -->
+      <a href="scifi.html" class="bg-gradient-to-r from-indigo-800 to-gray-800 p-6 rounded-lg text-center hover:scale-105 transition shadow-md">
+        <h3 class="text-2xl font-semibold text-indigo-300 mb-2">🚀 Sci-Fi</h3>
+        <p class="text-gray-200">Alien empires, starships, futuristic tech and galactic lore.</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- ✅ About Project -->
+  <section class="py-20 bg-gray-900 text-center">
+    <div class="max-w-4xl mx-auto px-4">
+      <h3 class="text-2xl font-semibold text-white mb-4">About DreamForge</h3>
+      <p class="text-gray-400">
+        DreamForge is a TYBSc Computer Science project designed for writers, RPG designers, and worldbuilders. 
+        It blends procedural generation with AI to produce creative assets like characters, worlds, weapons, logos, and quests.
+        Users can log in, save their creations, and export everything including 3D models.
+      </p>
+    </div>
+  </section>
+
+  <!-- ✅ Footer -->
+  <footer class="bg-gray-900 text-center py-6 text-gray-500 text-sm">
+    © 2025 DreamForge | Created by TYBSc CS Students<br />
+    Contact: <a href="mailto:team@dreamforge.app" class="text-cyan-300 underline">team@dreamforge.app</a>
+  </footer>
+
+  <!-- ✅ Scrollbar + Fade Animation -->
+  <script>
+    // Scroll progress
+    window.addEventListener("scroll", () => {
+      const scroll = window.scrollY;
+      const height = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = (scroll / height) * 100;
+      document.getElementById("scroll-progress").style.width = `${progress}%`;
+    });
+
+    // Page fade-in
+    window.addEventListener("load", () => {
+      document.body.style.opacity = 1;
+    });
+  </script>
+
+  <!-- ✅ Firebase Auth Navbar -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    import { firebaseConfig } from "../scripts/firebaseConfig.js";
+;
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const navbar = document.getElementById("navbar-user");
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        navbar.innerHTML = `
+          <span class="text-gray-300">Hello, ${user.email}</span>
+          <a href="dashboard.html" class="text-violet-300 hover:underline">Dashboard</a>
+          <button id="logoutBtn" class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded">Logout</button>
+        `;
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+          signOut(auth).then(() => location.reload());
+        });
+      } else {
+        navbar.innerHTML = `
+          <a href="login.html" class="bg-violet-600 text-white px-4 py-2 rounded">Login</a>
+          <a href="register.html" class="border border-violet-500 text-violet-300 px-4 py-2 rounded">Sign Up</a>
+        `;
+      }
+    });
+  </script>
+
+</body>
+</html>
