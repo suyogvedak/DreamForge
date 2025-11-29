@@ -1,11 +1,13 @@
-// scripts/firebaseConfig.js
-
+er// scripts/firebaseConfig.js
+// To get all the below details log in  into your firebase account 
+// Click on the settings tab 
+// There you will get all the details mentioned below 
 export const firebaseConfig = {
-  apiKey: "AIzaSyBOdrZMsUr6KQmptE9DiezntuTqiAXVjXg",
-  authDomain: "dreamforge-e931a.firebaseapp.com",
-  projectId: "dreamforge-e931a",
-  storageBucket: "dreamforge-e931a.appspot.com", 
-  messagingSenderId: "1071368408486",
-  appId: "1:1071368408486:web:879c48749c48852f999367",
-  measurementId: "G-34KSHF23XS"
+  apiKey: "Enter your api key here",
+  authDomain: "Enter your Domain name here",
+  projectId: "Enter the ID of your project",
+  storageBucket: "Enter the storage bucket here", 
+  messagingSenderId: "Enter the sender ID here ",
+  appId: "Enter the ID of your app here ",
+  measurementId: ""
 };
