@@ -1,0 +1,241 @@
+[
+  {
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": "vedaksuyog7@gmail.com",
+    "theme": "cyberpunk",
+    "type": "character",
+    "title": "Fallback Character",
+    "text": "No character data available for this theme. Created a fallback character.",
+    "image": null,
+    "meta": {
+      "theme": "[object object]",
+      "fallback": true,
+      "generatedAt": "2025-09-15T04:42:10.416Z"
+    },
+    "createdAt": "2025-09-15T04:42:12.658Z",
+    "_id": "68c7992a58bfd9240419d571"
+  },
+  {
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": "vedaksuyog7@gmail.com",
+    "theme": "cyberpunk",
+    "type": "character",
+    "title": "Fallback Character",
+    "text": "No character data available for this theme. Created a fallback character.",
+    "image": null,
+    "meta": {
+      "theme": "[object object]",
+      "fallback": true,
+      "generatedAt": "2025-09-15T04:42:10.416Z"
+    },
+    "createdAt": "2025-09-15T04:42:17.642Z",
+    "_id": "68c7992b58bfd9240419d572"
+  },
+  {
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": "vedaksuyog7@gmail.com",
+    "theme": "cyberpunk",
+    "type": "character",
+    "title": "Fallback Character",
+    "text": "No character data available for this theme. Created a fallback character.",
+    "image": null,
+    "meta": {
+      "theme": "[object object]",
+      "fallback": true,
+      "generatedAt": "2025-09-15T04:42:10.416Z"
+    },
+    "createdAt": "2025-09-15T04:42:18.962Z",
+    "_id": "68c7992e58bfd9240419d577"
+  },
+  {
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": "vedaksuyog7@gmail.com",
+    "theme": "cyberpunk",
+    "type": "character",
+    "title": "Fallback Character",
+    "text": "No character data available for this theme. Created a fallback character.",
+    "image": null,
+    "meta": {
+      "theme": "[object object]",
+      "fallback": true,
+      "generatedAt": "2025-09-15T04:42:10.416Z"
+    },
+    "createdAt": "2025-09-15T04:42:21.399Z",
+    "_id": "68c7993158bfd9240419d578"
+  },
+  {
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": "vedaksuyog7@gmail.com",
+    "theme": "cyberpunk",
+    "type": "character",
+    "title": "Fallback Character",
+    "text": "No character data available for this theme. Created a fallback character.",
+    "image": null,
+    "meta": {
+      "theme": "[object object]",
+      "fallback": true,
+      "generatedAt": "2025-09-15T04:42:10.416Z"
+    },
+    "createdAt": "2025-09-15T04:42:24.885Z",
+    "_id": "68c7993358bfd9240419d57b"
+  },
+  {
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": null,
+    "theme": "fantasy",
+    "type": "story",
+    "title": "Fallback Story ([object object])",
+    "text": "No stories available; fallback created.",
+    "image": null,
+    "meta": {
+      "theme": "[object object]",
+      "fallback": true,
+      "generatedAt": "2025-09-15T05:22:24.695Z"
+    },
+    "createdAt": "2025-09-15T05:22:25.923Z",
+    "_id": "68c7a29264c068a9327d1b5d"
+  },
+  {
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": "vedaksuyog7@gmail.com",
+    "theme": "scifi",
+    "type": "world",
+    "title": "Fallback World",
+    "text": "No world dataset available; fallback world generated.",
+    "image": null,
+    "meta": {
+      "theme": "[object object]",
+      "fallback": true,
+      "generatedAt": "2025-09-15T05:35:42.408Z"
+    },
+    "createdAt": "2025-09-15T05:35:43.851Z",
+    "_id": "68c7a5b025794c248d58b0aa"
+  },
+  {
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": "vedaksuyog7@gmail.com",
+    "theme": "cyberpunk",
+    "type": "weapon",
+    "title": "Fallback Weapon",
+    "text": "No weapon dataset. Fallback weapon.",
+    "image": null,
+    "meta": {
+      "theme": "[object object]",
+      "fallback": true,
+      "generatedAt": "2025-09-15T06:48:11.788Z"
+    },
+    "createdAt": "2025-09-15T06:48:19.321Z"
+  },
+  {
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": "vedaksuyog7@gmail.com",
+    "theme": "cyberpunk",
+    "type": "character",
+    "title": "Fallback Character",
+    "text": "A character character was created as a fallback.",
+    "image": null,
+    "meta": {
+      "fallback": true,
+      "generatedAt": "2025-09-17T07:22:29.836Z"
+    },
+    "createdAt": "2025-09-17T07:22:36.149Z",
+    "_id": "68ca61bc9a3311de634c849d"
+  },
+  {
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": "vedaksuyog7@gmail.com",
+    "theme": "scifi",
+    "type": "character",
+    "title": "Ixen",
+    "text": "{\"type\":\"character\",\"title\":\"Ixen\",\"text\":\"\",\"image\":null,\"meta\":{\"theme\":\"scifi\",\"generatedAt\":\"2025-09-18T13:14:39.252Z\"}}",
+    "image": null,
+    "meta": {
+      "theme": "scifi",
+      "generatedAt": "2025-09-18T13:14:39.252Z"
+    },
+    "createdAt": "2025-09-18T13:16:20.094Z",
+    "_id": "68cc0624a590c0211e44fb05"
+  },
+  {
+    "user": {
+      "id": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+      "email": "vedaksuyog7@gmail.com"
+    },
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": "vedaksuyog7@gmail.com",
+    "theme": "cyberpunk",
+    "type": "character",
+    "title": "Sable Cross",
+    "text": "{\n  \"id\": \"cp_char_mgg8a71r4625\",\n  \"name\": \"Sable Cross\",\n  \"handle\": \"GlitchHack\",\n  \"role\": \"Solo\",\n  \"background\": \"Sable Cross grew up in the Neon Market and learned solo work on the streets.\",\n  \"appearance\": \"chrome arm\",\n  \"cyberware\": [\n    \"Adrenal Boost\",\n    \"Targeting Assistant\"\n  ],\n  \"gear\": [\n    \"Disposable Burner\",\n    \"Mono-knife\"\n  ],\n  \"shortDescription\": \"Sable Cross — a solo who trades in secrets.\"\n}",
+    "image": null,
+    "meta": {
+      "theme": "cyberpunk",
+      "source": "local-fn",
+      "normalizedAt": "2025-10-07T07:18:18.928Z"
+    },
+    "raw": null,
+    "createdAt": "2025-10-07T07:18:24.132Z"
+  },
+  {
+    "user": {
+      "id": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+      "email": "vedaksuyog7@gmail.com"
+    },
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": "vedaksuyog7@gmail.com",
+    "theme": "cyberpunk",
+    "type": "world",
+    "title": "New Reach",
+    "text": "{\n  \"id\": \"cp_world_mgg8bc055030\",\n  \"name\": \"New Reach\",\n  \"type\": \"Megacity\",\n  \"biome\": \"Subterranean Complex\",\n  \"techLevel\": \"High-corporate\",\n  \"populationMillions\": 11.84,\n  \"dominantCulture\": \"Corporate technocracy\",\n  \"conflicts\": [\n    \"Smuggler feud\"\n  ],\n  \"notableLandmarks\": [\n    \"Skybridge 9\",\n    \"The Undergrid\"\n  ],\n  \"primaryResources\": \"synthetic organics\",\n  \"governance\": \"Corporate council\",\n  \"shortDescription\": \"New Reach — a glass sprawl governed by corporate interests.\"\n}",
+    "image": null,
+    "meta": {
+      "theme": "cyberpunk",
+      "source": "local-fn",
+      "normalizedAt": "2025-10-07T07:19:12.005Z"
+    },
+    "raw": null,
+    "createdAt": "2025-10-07T07:19:15.061Z"
+  },
+  {
+    "user": {
+      "id": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+      "email": "vedaksuyog7@gmail.com"
+    },
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": "vedaksuyog7@gmail.com",
+    "theme": "cyberpunk",
+    "type": "character",
+    "title": "Mira Cross",
+    "text": "{\n  \"id\": \"cp_char_mggbqkhh9000\",\n  \"name\": \"Mira Cross\",\n  \"handle\": \"DarkNode\",\n  \"role\": \"Media Hacker\",\n  \"background\": \"Mira Cross grew up in the Skyline Plaza and learned media hacker work on the streets.\",\n  \"appearance\": \"scar across jaw\",\n  \"cyberware\": [\n    \"Skinjack Interface\",\n    \"Subdermal Armor\"\n  ],\n  \"gear\": [\n    \"Disposable Burner\",\n    \"Nano-swarm\"\n  ],\n  \"shortDescription\": \"Mira Cross — a media hacker who trades in secrets.\"\n}",
+    "image": null,
+    "meta": {
+      "theme": "cyberpunk",
+      "source": "local-fn",
+      "normalizedAt": "2025-10-07T08:55:01.685Z"
+    },
+    "raw": null,
+    "createdAt": "2025-10-07T08:55:03.394Z"
+  },
+  {
+    "user": {
+      "id": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+      "email": "vedaksuyog7@gmail.com"
+    },
+    "uid": "T1rehaHCZLWza5Zgu3w29cmP8iI2",
+    "userEmail": "vedaksuyog7@gmail.com",
+    "theme": "cyberpunk",
+    "type": "weapon",
+    "title": "Mono-knife 800",
+    "text": "Mono-knife built from titanium alloy — overclocked coil.",
+    "image": null,
+    "meta": {
+      "id": "cp_weapon_mgn5ate06544",
+      "theme": "cyberpunk",
+      "source": "runtime",
+      "generatedAt": "2025-10-12T03:29:12.264Z",
+      "normalizedAt": "2025-10-12T03:29:12.265Z"
+    },
+    "raw": null,
+    "createdAt": "2025-10-12T03:29:14.243Z"
+  }
+]
